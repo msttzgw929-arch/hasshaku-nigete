@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<link rel="icon" href="data:,">
+<title>八尺様からにげて！</title>
+<style>
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#05070f;color:#fff;font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;touch-action:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;pointer-events:none;z-index:5}
+#top{top:10px;left:50%;transform:translateX(-50%);text-align:center;text-shadow:0 2px 6px #000}
+#time{font-size:30px;font-weight:800;letter-spacing:1px}
+#stage{font-size:15px;opacity:.95;margin-top:2px}
+#irrWrap{width:220px;height:12px;border:2px solid #fff8;border-radius:8px;margin:6px auto 0;overflow:hidden;background:#0008}
+#irr{height:100%;width:0;background:linear-gradient(90deg,#ff9fb5,#ff3b5c,#c1002a);transition:width .1s}
+#irrLabel{font-size:12px;opacity:.85;margin-top:2px}
+#portrait{top:10px;left:10px;width:104px;height:76px;border-radius:12px;border:2px solid #fff6;overflow:hidden;background:#000;box-shadow:0 4px 14px #000a;transition:all .35s}
+#portrait canvas{width:100%;height:100%;display:block}
+#portrait.big{left:50%;top:70px;transform:translateX(-50%);width:296px;height:216px;border-color:#ff9fb5}
+#radar{top:10px;right:10px;width:96px;height:96px;border-radius:50%;background:#0009;border:2px solid #fff5}
+#sub{bottom:14%;left:50%;transform:translateX(-50%);max-width:90%;text-align:center;font-size:20px;font-weight:700;padding:6px 14px;border-radius:12px;background:#000a;opacity:0;transition:opacity .25s;color:#ffd6e2;white-space:nowrap}
+body.grabbing #sub{bottom:auto;top:296px}
+#banner{top:34%;left:50%;transform:translate(-50%,-50%) scale(.8);font-size:34px;font-weight:900;color:#ff5b7f;text-shadow:0 0 12px #000,0 3px 0 #400;opacity:0;transition:all .3s;white-space:nowrap;text-align:center}
+#banner.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#vign{inset:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(160,0,30,.0) 60%,rgba(160,0,30,.85) 100%);opacity:0}
+#grab{inset:0;display:none;text-align:center}
+#grab .msg{position:absolute;bottom:22%;left:0;right:0;font-size:30px;font-weight:900;color:#fff;text-shadow:0 0 10px #f06,0 3px 0 #000;animation:pulse .5s infinite alternate}
+#grab .bar{position:absolute;bottom:16%;left:50%;transform:translateX(-50%);width:min(70vw,420px);height:22px;border:3px solid #fff;border-radius:12px;background:#0008;overflow:hidden}
+#grabFill{height:100%;width:0;background:linear-gradient(90deg,#ffd36b,#ff6b9a)}
+#grab .tl{position:absolute;bottom:11%;left:0;right:0;font-size:16px}
+#hand{position:absolute;right:12%;bottom:-40px;width:180px;transform-origin:80% 100%;transform:rotate(25deg)}
+@keyframes pulse{from{transform:scale(1)}to{transform:scale(1.07)}}
+.pop{position:fixed;z-index:9;pointer-events:none;font-weight:900;font-size:34px;color:#fff;text-shadow:0 0 8px #f39,0 3px 0 #a03;animation:popf .6s forwards}
+@keyframes popf{from{opacity:1;transform:translate(-50%,-50%) scale(.6)}to{opacity:0;transform:translate(-50%,-120%) scale(1.3)}}
+.screen{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,#1b2244ee,#05070fee);text-align:center;padding:20px}
+.screen h1{font-size:clamp(34px,8vw,64px);margin:0 0 8px;color:#fff;text-shadow:0 0 18px #ff4d7a,0 4px 0 #6a0020;letter-spacing:2px}
+.screen p{margin:6px 0;line-height:1.7;font-size:15px;opacity:.92}
+.btn{pointer-events:auto;margin-top:18px;font-size:22px;font-weight:800;padding:14px 46px;border-radius:40px;border:none;background:linear-gradient(#ff7ea3,#e8306a);color:#fff;box-shadow:0 6px 0 #8a1240,0 10px 24px #0008;cursor:pointer;font-family:inherit}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8a1240}
+#titleImg{height:min(34vh,260px);filter:drop-shadow(0 0 20px #ff4d7a66)}
+.keys{display:inline-block;text-align:left;background:#0006;border-radius:12px;padding:10px 18px;margin-top:8px;font-size:14px}
+#loading{font-size:14px;opacity:.8;margin-top:10px}
+#sticks{display:none}
+.playing #sticks{display:block}
+.stick{position:fixed;bottom:26px;width:150px;height:150px;border-radius:50%;background:#ffffff16;border:2px solid #fff5;z-index:6;touch-action:none;pointer-events:auto}
+#stickL{left:24px}#stickR{right:24px}
+.knob{position:absolute;left:47px;top:47px;width:56px;height:56px;border-radius:50%;background:#fff8;box-shadow:0 2px 8px #0008;pointer-events:none}
+.stick .lbl{position:absolute;top:-22px;left:0;right:0;text-align:center;font-size:12px;opacity:.75;pointer-events:none;text-shadow:0 1px 3px #000}
+#credit{position:fixed;bottom:4px;right:8px;font-size:10px;opacity:.45;z-index:4;pointer-events:none}
+#center{top:50%;left:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff8}
+</style>
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js"}}</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="vign" class="hud"></div>
+<div id="center" class="hud"></div>
+<div id="top" class="hud"><div id="time">0:00.0</div><div id="stage">お腹レベル 1</div><div id="irrWrap"><div id="irr"></div></div><div id="irrLabel">イライラ度</div></div>
+<div id="portrait" class="hud"><canvas id="pc" width="296" height="216"></canvas></div>
+<canvas id="radar" class="hud" width="192" height="192"></canvas>
+<div id="sub" class="hud"></div>
+<div id="banner" class="hud"></div>
+<div id="grab" class="hud">
+  <div class="msg">お腹をたたきまくって脱出！</div>
+  <div class="bar"><div id="grabFill"></div></div>
+  <div class="tl" id="grabTl">クリック / スペース / タップ連打！</div>
+  <svg id="hand" viewBox="0 0 120 160"><g fill="#f6d2bd" stroke="#8a5a48" stroke-width="3" stroke-linejoin="round"><path d="M30 150 L28 80 Q26 66 36 66 Q44 66 45 78 L46 40 Q46 28 56 28 Q66 28 66 40 L66 30 Q66 18 76 18 Q86 18 86 30 L86 40 Q87 30 96 30 Q105 31 105 42 L104 98 Q104 128 90 150 Z"/><path d="M45 78 L46 100 M66 40 L66 96 M86 40 L86 96" fill="none"/></g></svg>
+</div>
+<div id="sticks"><div id="stickL" class="stick"><div class="lbl">いどう</div><div class="knob"></div></div><div id="stickR" class="stick"><div class="lbl">ふりむく</div><div class="knob"></div></div></div>
+<div id="credit">Voice: AivisSpeech (F2 / JVNV CC BY-SA 4.0)</div>
+
+<div id="title" class="screen">
+  <img id="titleImg" src="assets/img/body.png" alt="">
+  <h1>八尺様からにげて！</h1>
+  <p>お腹がとっても大きい八尺様に、夜の町で追いかけられています。<br>捕まらないように、できるだけ長く逃げのびよう！</p>
+  <div class="keys">
+    🕹️ <b>左スティック</b>：移動　／　<b>右スティック</b>：すばやく振り向く（上下で見上げる）<br>
+    ✋ 捕まったら：画面を<b>タップ / クリック連打</b>でお腹をペチペチ！<br>
+    ⌨️ キーボードでもOK：WASD・矢印キーで移動、←→で振り向き、スペースで連打<br>
+    🐢 八尺様の足はあなたより遅いので、落ち着いて逃げよう！
+  </div>
+  <p style="font-size:13px;opacity:.7">逃げ続けると八尺様はイライラして、お腹がどんどん大きくなります（上限なし）。<br>大きくなったお腹は建物もこわしてしまいます…！🎧 音声ありがおすすめ</p>
+  <button class="btn" id="startBtn" disabled>読み込み中…</button>
+  <div id="loading"></div>
+</div>
+<div id="over" class="screen" style="display:none">
+  <h1>つかまっちゃった…</h1>
+  <p id="overText"></p>
+  <button class="btn" id="retryBtn">もう一回にげる</button>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
