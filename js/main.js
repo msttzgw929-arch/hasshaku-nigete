@@ -738,7 +738,7 @@ function updateHasshaku(dt) {
   const prev = H.phase; H.phase += dt * Math.max(H.speed, 0.0) / stride * Math.PI;
   if (Math.floor(prev / Math.PI) !== Math.floor(H.phase / Math.PI) && H.walk > 0.2) { // footfall
     const d = dist; const it = clamp((1.4 - d / 45) * (0.6 + H.stage * 0.12), 0.05, 1.6);
-    SFX.step(Math.min(it, 1)); addShake(0.12 * it); jiggle(0.03 + 0.006 * H.stage, 0.035); puff(H.pos.x, 0.2, H.pos.z, 2, R * 0.6);
+    SFX.step(Math.min(it, 1)); addShake(0.12 * it); jiggle(0.03 + 0.002 * Math.min(H.stage, 10), 0.03); puff(H.pos.x, 0.2, H.pos.z, 2, R * 0.6);
   }
   // growth springs
   H.bellyV += ((H.bellyT - H.bellyS) * 30 - H.bellyV * 5) * dt; H.bellyS += H.bellyV * dt;
@@ -746,7 +746,7 @@ function updateHasshaku(dt) {
   // belly jiggle spring (bigger belly = slower, heavier wobble)
   const k = 70 / Math.sqrt(H.bellyS * H.bodyS), c = 3.2;
   const J = H.jig; J.vy += (-J.y * k - J.vy * c) * dt; J.y += J.vy * dt; J.vx += (-J.x * k - J.vx * c) * dt; J.x += J.vx * dt; J.rip *= Math.exp(-dt * 2.2);
-  J.y = clamp(J.y, -0.12, 0.12); J.x = clamp(J.x, -0.2, 0.2);
+  J.y = clamp(J.y, -0.07, 0.07); J.x = clamp(J.x, -0.09, 0.09); // keep wobble soft so the shape stays round
   // expression by mood
   const mood = H.stage + H.irr;
   if (H.state === 'chase') setExpr(mood < 0.55 ? 'smile' : mood < 2.6 ? 'irritated' : 'angry');
